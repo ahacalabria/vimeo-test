@@ -2,23 +2,27 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Test Vimeo + Chromecast</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vimeo Cast Test</title>
   <link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet" />
   <script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
-  <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
-  <script src="https://unpkg.com/@silvermine/videojs-chromecast/dist/videojs-chromecast.min.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 40px; background: #f8f8f8; text-align: center; }
-    video { width: 90%; max-width: 800px; margin-top: 20px; border-radius: 10px; }
-  </style>
+  <script type="module" src="https://unpkg.com/@google/castable-videojs@1.0.1/dist/index.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Testando Vimeo Pro + Video.js + Chromecast</h2>
-  <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" playsinline>
-    <source src="" type="video/mp4" />
-  </video>
-
-  <div id="videoList"></div>
+  <h1>Testando Vimeo + Chromecast</h1>
+  <div id="video-container">
+    <video
+      id="my-video"
+      class="video-js castable-video-js vjs-default-skin"
+      controls
+      preload="auto"
+      width="640"
+      height="360"
+      data-setup='{}'
+    ></video>
+  </div>
+  <div id="video-list"></div>
 
   <script src="script.js"></script>
 </body>

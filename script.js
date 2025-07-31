@@ -1,61 +1,49 @@
-const ACCESS_TOKEN = 'fd34e8b7d77d082834788d718081bc1d'; // Substitua pelo token gerado no painel Vimeo
+const VIMEO_TOKEN = "fd34e8b7d77d082834788d718081bc1d";
+const USER_ID = "me"; // Pode ser um número ou 'me'
 
-async function fetchVimeoVideos() {
-  const res = await fetch('https://api.vimeo.com/me/videos?per_page=5', {
+async function getVideos() {
+  const res = await fetch(`https://api.vimeo.com/users/${USER_ID}/videos?per_page=5`, {
     headers: {
-      Authorization: `bearer ${ACCESS_TOKEN}`
-    }
+      Authorization: `Bearer ${VIMEO_TOKEN}`,
+    },
+  });
+  const data = await res.json();
+  return data.data; // array de vídeos
+}
+
+function setupVideoPlayer(url) {
+  const player = videojs('my-video');
+  player.src({
+    src: url,
+    type: url.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
+  });
+  player.play();
+}
+
+async function init() {
+  const videos = await getVideos();
+  const listContainer = document.getElementById('video-list');
+
+  videos.forEach((video, index) => {
+    const btn = document.createElement('button');
+    btn.textContent = `Play vídeo ${index + 1}`;
+    btn.onclick = async () => {
+      // Buscar arquivos de vídeo do player
+      const files = video.download || video.files;
+      const file = files?.find(f => f.quality === 'sd' || f.quality === '720p' || f.link.endsWith('.mp4'));
+      if (file) setupVideoPlayer(file.link);
+      else alert("Vídeo não disponível para download direto.");
+    };
+    listContainer.appendChild(btn);
   });
 
-  if (!res.ok) {
-    console.error('Erro ao buscar vídeos:', res.status);
-    return;
-  }
-
-  const data = await res.json();
-  const videos = data.data;
-
-  for (let i = 0; i < videos.length; i++) {
-    const video = videos[i];
-    const file = video.files?.find(f => f.quality === 'hd' && f.type === 'video/mp4') ||
-                 video.files?.find(f => f.type === 'video/mp4');
-
-    if (file) {
-      renderVideoOption(video.name, file.link, i === 0);
-    }
+  // Auto play o primeiro vídeo
+  const first = videos[0];
+  if (first) {
+    const files = first.download || first.files;
+    const file = files?.find(f => f.quality === 'sd' || f.quality === '720p' || f.link.endsWith('.mp4'));
+    if (file) setupVideoPlayer(file.link);
   }
 }
 
-function renderVideoOption(title, mp4Url, autoPlay = false) {
-  const list = document.getElementById('videoList');
-  const btn = document.createElement('button');
-  btn.innerText = `▶️ ${title}`;
-  btn.style.margin = '10px';
-  btn.style.padding = '10px 20px';
-  btn.style.cursor = 'pointer';
-  btn.onclick = () => loadVideo(mp4Url);
-  list.appendChild(btn);
-
-  if (autoPlay) loadVideo(mp4Url);
-}
-
-function loadVideo(mp4Url) {
-  const playerEl = document.getElementById('videoPlayer');
-  const source = playerEl.querySelector('source');
-  source.src = mp4Url;
-  playerEl.load();
-
-  if (window.videojs) {
-    if (!window.player) {
-      window.player = videojs(playerEl);
-      player.chromecast({
-        metaTitle: 'Transmitindo via Chromecast',
-        metaSubtitle: 'Vimeo + Video.js'
-      });
-    } else {
-      window.player.src({ type: 'video/mp4', src: mp4Url });
-    }
-  }
-}
-
-fetchVimeoVideos();
+init();
